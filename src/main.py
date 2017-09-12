@@ -4,9 +4,13 @@ import numpy as np
 from sklearn.preprocessing import Imputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model.logistic import LogisticRegression
+from sklearn.linear_model.logistic import LogisticRegressionCV
+
 
 TEST_RATIO = 0.1
-NOPAY_THREASH_HOLD = 0.3
+NOPAY_THREASH_HOLD = 0.8
+MAX_N_POSITIVE_FEATURE_NUM = 5
+MAX_N_NEGATIVE_FEATURE_NUM = 5
 
 def split_train_test(data, test_ratio):
     np.random.seed(143)
@@ -62,7 +66,9 @@ def modifiy_data():
 
     df_fit.to_csv('foo_final.csv')
 
-modifiy_data()
+
+
+#modifiy_data()
 df = pd.DataFrame.from_csv('foo_final.csv')
 
 train_split, test_split = split_train_test(df, TEST_RATIO)
@@ -77,7 +83,8 @@ standard_scaler.fit(train_data)
 train_data  = standard_scaler.transform(train_data)
 test_data = standard_scaler.transform(test_data)
 
-lr = LogisticRegression(max_iter=5000)
+#lr = LogisticRegression(class_weight='balanced', max_iter= 5000)
+lr = LogisticRegressionCV(penalty='l2', solver='liblinear', max_iter=1000,  class_weight='balanced')
 lr.fit(train_data, train_label)
 #test_predict =  lr.predict(test_data)
 test_predict_prob = lr.predict_proba(test_data)
@@ -122,6 +129,29 @@ nopay_precision = float(nopay_nopay) / (nopay_nopay + pay_nopay)
 
 print ('pay_recall :{} ({}/{}) pay_precision :{} ({}/{})').format(pay_recall, pay_pay, pay, pay_precision, pay_pay, pay_pay + nopay_pay)
 print ('nopay_recall :{} ({}/{}) nopay_precision: {} ({}/{})').format(nopay_recall, nopay_nopay, nopay, nopay_precision, nopay_nopay, nopay_nopay + pay_nopay)
+
+coef = lr.coef_
+
+coef_feature = []
+
+for coef_, column_name in zip(coef[0], df.columns):
+    coef_feature.append([coef_, column_name])
+
+coef_feature.sort()
+
+print coef
+
+print 'MAX_{}_NEGATIVE_FEATURE'.format(MAX_N_NEGATIVE_FEATURE_NUM)
+print coef_feature[0:MAX_N_NEGATIVE_FEATURE_NUM]
+print '------------------------------------------------'
+print 'MAX_{}_POSITIVE_FEATURE'.format(MAX_N_POSITIVE_FEATURE_NUM)
+print coef_feature[-1:-1-MAX_N_POSITIVE_FEATURE_NUM:-1]
+
+
+
+
+
+
 
 
 
