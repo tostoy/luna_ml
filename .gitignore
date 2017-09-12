@@ -1,0 +1,7 @@
+.idea
+target
+sqlscripts/target
+.idea/*xml
+*.iml
+warehouse
+*odps_config.ini
